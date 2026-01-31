@@ -1,5 +1,5 @@
-backend/__pycache__/*
+backend/__pycache__/
 backend/.env
-Receiptflow/node_modules/*
+Receiptflow/node_modules/
 Receiptflow/.env
-venv/*
+venv/
