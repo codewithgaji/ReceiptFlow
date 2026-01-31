@@ -1,0 +1,44 @@
+html_template = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial; margin: 40px; }
+            h1 { color: #333; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #4CAF50; color: white; }
+            .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <h1>Receipt #{{ receipt_number }}</h1>
+        <p><strong>Customer:</strong> {{ customer_name }}</p>
+        <p><strong>Email:</strong> {{ customer_email }}</p>
+        <p><strong>Payment Method:</strong> {{ payment_method }}</p>
+        <p><strong>Date:</strong> {{ date }}</p>
+        
+        <table>
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+            </tr>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ "%.2f"|format(item.unit_price) }}</td>
+                <td>${{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+        <div class="total">
+            <p>Subtotal: ${{ "%.2f"|format(subtotal) }}</p>
+            <p>Tax (10%): ${{ "%.2f"|format(tax) }}</p>
+            <p>Total: ${{ "%.2f"|format(total) }}</p>
+        </div>
+    </body>
+    </html>
