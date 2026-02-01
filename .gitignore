@@ -3,3 +3,4 @@ backend/.env
 Receiptflow/node_modules/
 Receiptflow/.env
 venv/
+backend/file_uploads

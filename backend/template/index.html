@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastAPI File UPload</title>
+</head>
+<body>
+  <form method="POST" action="http://localhost:8000/uploadfile/" enctype="multipart/form-data">
+    <input type="file" name="file_uploads" multiple>
+    <button type="submit">Submit</button>
+  </form>
+  
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FASTAPI File Uploads</title>
+</head>
+<body>
+   <!--This is used to determine how th form data will be processed and where it will be sent-->
+
+  <form method="POST" action="http://localhost:8000/uploadfile/" enctype="multipart/form-data"> <!--This is used for the encoding of the data to the backend-->
+    <input type="file" name="file_uploads" multiple> <!--The "name" here must match with the name parameter we set in the backend so we can know what we are sending-->
+    <button type="submit">Submit</button>
+  </form>
+  
+</body>
+</html>
