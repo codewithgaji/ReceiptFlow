@@ -68,7 +68,7 @@ async def order_webhook(receipt: ReceiptCreate):
   # Return PDF as a Download
 
   headers = {
-    "Content-Disposition": f'attachment; filename="receipt-{receipt.customer_name}.pdf'
+    "Content-Disposition": f'attachment; filename="receipt-{receipt.customer_name}.pdf"'
   }
 
   return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
