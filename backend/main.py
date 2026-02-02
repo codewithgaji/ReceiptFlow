@@ -199,7 +199,12 @@ def receipt_to_html(data: ReceiptCreate):
   subtotal = sum(i.quantity* i.unit_price for i in data.items) # Calculating the Subtotal
   tax = subtotal * 0.10
   total = subtotal + tax
-  payment_method = data.payment_method.value
+  payment_method = (
+    data.payment_method.value
+    if hasattr(data.payment_method, "value")
+    else data.payment_method
+  ) # Using this, just in case the db messes up the value of the Enum
+
   business_store= data.business_store
 
 
