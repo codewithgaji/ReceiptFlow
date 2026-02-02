@@ -226,7 +226,7 @@ def html_to_pdf_bytes(html_str: str) -> bytes:
 
 
 # Webhook Payment Success
-@app.post("/webhook/payment-success/", response_class=Response)
+@app.post("/webhook/payment-success/")
 def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session)):
   receipt_exists = db.query(OrderReceipt).filter(OrderReceipt.order_id == receipt.order_id).first()
 
@@ -258,10 +258,6 @@ def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session))
     ]
   )
 
-  # Finally we can save it
-  db.add(db_receipt)
-  db.commit()
-  db.refresh(db_receipt)
 
 
 
@@ -286,6 +282,11 @@ def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session))
   # }
   # return Response(
   #   content=pdf_bytes, media_type="application/pdf", headers=headers)
+  
+  # Finally we can save it
+  db.add(db_receipt)
+  db.commit()
+  db.refresh(db_receipt)
   
   return {
     "id": db_receipt.order_id,

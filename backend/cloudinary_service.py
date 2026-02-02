@@ -4,11 +4,12 @@ import cloudinary.uploader
 import os
 
 def upload_pdf_to_cloudinary(pdf_bytes: bytes, public_id: str) -> str:
+  tmp_path = None
   try:
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tmp:
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
       tmp.write(pdf_bytes) # This writes the pdf_bytws and add the suffix ".pdf"  
       tmp.flush()
-      tmp_path = tmp.name # saving this path because Temp dir won't allow access once closed
+      tmp_path = tmp.name # Windows File locking while open so setting the value of tmp_path as the tmp name
 
       result = cloudinary.uploader.upload(
         tmp_path,
