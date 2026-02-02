@@ -110,6 +110,7 @@ def get_db_session():
 
 
 # Creating Db_seed 
+@app.on_event("startup")
 def init_db():
   database_models.Base.metadata.create_all(bind=engine) # This creates all the tables in the db
   db = SessionLocal()
@@ -147,8 +148,12 @@ def init_db():
 
 
 @app.get("/receipts")
-def get_reciepts():
-  return ORDER_SEED
+def get_reciepts(db: Session = Depends(get_db_session)):
+  db_receipts = db.query(OrderReceipt).all()
+  if not db_receipts:
+    raise HTTPException(status_code=400, detail="No Order Receipts Found in the db")
+  return db_receipts
+  
 
 
 # @app.post("/receipts/payment-success") # response_model=ReceiptItemResponse)
@@ -254,5 +259,6 @@ def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session))
     "Content-Disposition": f'attachment; filename="receipt-{safe_name}.pdf"'
   }
   return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
+  
 
 

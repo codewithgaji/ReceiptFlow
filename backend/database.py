@@ -15,7 +15,7 @@ if db_url.startswith("postgres://"):
 
 engine = create_engine(db_url)
 
-SessionLocal = sessionmaker(autoflush=False, autocomiit=False, bind=engine)
+SessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
 
 

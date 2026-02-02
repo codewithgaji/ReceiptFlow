@@ -29,7 +29,7 @@ class ReceiptCreate(BaseModel):
 
 
 class ReceiptItemResponse(ReceiptItemCreate):
-  model_Config = ConfigDict(from_attributes = True) # This is  why FastAPI is better, if the item is not available in the table of the db, it checks if the item is an attribute from another table and uses .notation to pluck it's value
+  model_config = ConfigDict(from_attributes = True) # This is  why FastAPI is better, if the item is not available in the table of the db, it checks if the item is an attribute from another table and uses .notation to pluck it's value
 
   id: int
 
