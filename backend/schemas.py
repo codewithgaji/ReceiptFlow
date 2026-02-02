@@ -24,6 +24,7 @@ class ReceiptCreate(BaseModel):
   customer_email: EmailStr
   items: list[ReceiptItemCreate]
   payment_method: PaymentMethod
+  business_store: str
 
 
 
@@ -42,6 +43,7 @@ class ReceiptResponse(BaseModel):
   customer_name: str
   customer_email: EmailStr
   payment_method: str
+  business_store: str
 
   subtotal: float
   tax: float

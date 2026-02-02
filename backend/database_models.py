@@ -16,6 +16,7 @@ class OrderReceipt(Base):
 
   customer_name = Column(String, nullable=False)
   customer_email = Column(String, nullable=False)
+  business_store = Column(String, nullable=False)
 
   subtotal = Column(Float, nullable=False)
   total = Column(Float, nullable=False)
@@ -23,6 +24,9 @@ class OrderReceipt(Base):
 
   payment_method = Column(String, nullable=False)
   created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+  # PDF URL for CLoudinary
+  pdf_url = Column(String, nullable=True)
 
 
   items = relationship(

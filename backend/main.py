@@ -9,6 +9,7 @@ import database_models
 from database_models import OrderReceipt, Item # This is used for seeding
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
+from cloudinary_service import upload_pdf_to_cloudinary
 
 
 
@@ -28,12 +29,13 @@ def compute_totals(items):
 
 # Omooo, my ORDER_SEEDING needs to use things like tax, subtotal etc, i will have to create a function that creates a receipt
 
-def make_receipt(order_id, customer_name, customer_email, payment_method, items): # The attrs of the db_model
+def make_receipt(order_id, customer_name, customer_email, payment_method, business_store, items): # The attrs of the db_model
   subtotal, tax, total,  = compute_totals(items) # I'm computing the values of these variables using the "compute_total()" func.
   return OrderReceipt(
     order_id=order_id,
     customer_name=customer_name,
     customer_email=customer_email,
+    business_store=business_store,
     payment_method=payment_method,
     subtotal=subtotal,
     tax = tax,
@@ -50,6 +52,7 @@ ORDER_SEED = [
     customer_name="Ahmed Hassan",
     customer_email="ahmed@gmail.com",
     payment_method="Transfer",
+    business_store="Tech Plaza",
     items=[
       Item(product_name="Laptop", quantity=1, unit_price=50000),
       Item(product_name="Mouse", quantity=2, unit_price=1500),
@@ -60,6 +63,7 @@ ORDER_SEED = [
     customer_name="Fatima Ali",
     customer_email="fatima@yahoo.com",
     payment_method="Crypto-Currency",
+    business_store="Tech Plaza",
     items=[
       Item(product_name="Headphones", quantity=1, unit_price=5000),
     ]
@@ -69,6 +73,7 @@ ORDER_SEED = [
     customer_name="Ibrahim Khan",
     customer_email="ibrahim@outlook.com",
     payment_method="Card",
+    business_store="Tech Plaza",
     items=[
       Item(product_name="Monitor", quantity=1, unit_price=15000),
       Item(product_name="Keyboard", quantity=1, unit_price=3000),
@@ -79,6 +84,7 @@ ORDER_SEED = [
     customer_name="Zainab Mohammed",
     customer_email="zainab@gmail.com",
     payment_method="Transfer",
+    business_store="Tech Plaza",
     items=[
       Item(product_name="USB Cable", quantity=5, unit_price=500),
       Item(product_name="HDMI Cable", quantity=2, unit_price=1000),
@@ -89,13 +95,13 @@ ORDER_SEED = [
     customer_name="Omar Malik",
     customer_email="omar@outlook.com",
     payment_method="Card",
+    business_store="Tech Plaza",
     items=[
       Item(product_name="Webcam", quantity=1, unit_price=8000),
       Item(product_name="Microphone", quantity=1, unit_price=6000),
     ]
   ),
 ]
-
 
 
 
@@ -194,6 +200,8 @@ def receipt_to_html(data: ReceiptCreate):
   tax = subtotal * 0.10
   total = subtotal + tax
   payment_method = data.payment_method.value
+  business_store= data.business_store
+
 
   # Declaring the variables
   return template.render(
@@ -202,7 +210,8 @@ def receipt_to_html(data: ReceiptCreate):
     subtotal=subtotal,
     tax=tax,
     items = data.items,
-    payment_method = payment_method
+    payment_method = payment_method,
+    business_store = business_store
     )
 
 
@@ -212,8 +221,8 @@ def html_to_pdf_bytes(html_str: str) -> bytes:
 
 
 # Webhook Payment Success
-@app.post("/webhook/payment-success/")
-def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session)) -> ReceiptItemResponse:
+@app.post("/webhook/payment-success/", response_class=Response)
+def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session)):
   receipt_exists = db.query(OrderReceipt).filter(OrderReceipt.order_id == receipt.order_id).first()
 
   if receipt_exists:
@@ -252,13 +261,32 @@ def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session))
 
 
   # Now i can Generate the PDF Using PDFKIT and Jinja2
-  html = receipt_to_html(receipt) # Chnaging the validated receipt data to html
+  html = receipt_to_html(db_receipt) # Chnaging the validated receipt data to html
   pdf_bytes = html_to_pdf_bytes(html)
-  safe_name = receipt.customer_name.replace(" ", "_")
-  headers = {
-    "Content-Disposition": f'attachment; filename="receipt-{safe_name}.pdf"'
-  }
-  return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
   
+
+  # Cloudinary Upload
+  public_id = f"{db_receipt.order_id}-{db_receipt.receipt_number}" # This creates the public id 
+
+  # And I upload to cloudinary by passing the parameters from the "cloudinary_sevice.py" created.
+  pdf_url = upload_pdf_to_cloudinary(pdf_bytes, public_id=public_id)
+
+
+
+  # MIGRATING FROM STREAMLINE DOWNLOAD TO UPLOADING ON CLOUDINARY
+
+  # safe_name = db_receipt.customer_name.replace(" ", "_")
+  # headers = {
+  #   "Content-Disposition": f'attachment; filename="receipt-{safe_name}.pdf"'
+  # }
+  # return Response(
+  #   content=pdf_bytes, media_type="application/pdf", headers=headers)
+  
+  return {
+    "id": db_receipt.order_id,
+    "order_id": db_receipt.order_id,
+    "receipt_number": db_receipt.receipt_number,
+    "Pdf_Url": pdf_url
+  }
 
 
