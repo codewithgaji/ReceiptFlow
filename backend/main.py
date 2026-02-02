@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from schemas import ReceiptCreate, PaymentMethod, ReceiptItemResponse
 from pathlib import Path
 # from weasyprint import HTML not working
@@ -8,6 +8,8 @@ import pdfkit # Using PDFKit since WeasyPrint refuses to work on my windows
 import database_models
 from database_models import OrderReceipt, Item # This is used for seeding
 from database import engine, SessionLocal
+from sqlalchemy.orm import Session
+
 
 
 app = FastAPI()
@@ -27,7 +29,7 @@ def compute_totals(items):
 # Omooo, my ORDER_SEEDING needs to use things like tax, subtotal etc, i will have to create a function that creates a receipt
 
 def make_receipt(order_id, customer_name, customer_email, payment_method, items): # The attrs of the db_model
-  subtotal, total, tax, = compute_totals(items) # I'm computing the 
+  subtotal, tax, total,  = compute_totals(items) # I'm computing the values of these variables using the "compute_total()" func.
   return OrderReceipt(
     order_id=order_id,
     customer_name=customer_name,
@@ -43,49 +45,62 @@ def make_receipt(order_id, customer_name, customer_email, payment_method, items)
 
 # THE DB Seeding
 ORDER_SEED = [
-  items = [ # items attribute is actually a relationship to another table, hence this:
-            Item(product_name="Laptop", quantity=1, unit_price=50000),
-            Item(product_name="Mouse", quantity=2, unit_price=1500),
-        ]
-    subtotal, tax, total = compute_totals(items)
-    OrderReceipt(
-        order_id="ORD-001",
-        customer_name="Ahmed Hassan",
-        customer_email="ahmed@gmail.com",
-        payment_method="Transfer",
-        subtotal = subtotal
-        
-    ),
-
-    OrderReceipt(
-        order_id="ORD-002",
-        customer_name="Fatima Ali",
-        customer_email="fatima@yahoo.com",
-        payment_method="Crypto-Currency",
-        items=[
-            Item(product_name="Headphones", quantity=1, unit_price=5000),
-        ]
-    ),
-
-    OrderReceipt(
-        order_id="ORD-003",
-        customer_name="Ibrahim Khan",
-        customer_email="ibrahim@outlook.com",
-        payment_method="Card",
-        items=[
-            Item(product_name="Monitor", quantity=1, unit_price=15000),
-            Item(product_name="Keyboard", quantity=1, unit_price=3000),
-        ]
-    ),
+  make_receipt(
+    order_id="ORD-001",
+    customer_name="Ahmed Hassan",
+    customer_email="ahmed@gmail.com",
+    payment_method="Transfer",
+    items=[
+      Item(product_name="Laptop", quantity=1, unit_price=50000),
+      Item(product_name="Mouse", quantity=2, unit_price=1500),
+    ]
+  ),
+  make_receipt(
+    order_id="ORD-002",
+    customer_name="Fatima Ali",
+    customer_email="fatima@yahoo.com",
+    payment_method="Crypto-Currency",
+    items=[
+      Item(product_name="Headphones", quantity=1, unit_price=5000),
+    ]
+  ),
+  make_receipt(
+    order_id="ORD-003",
+    customer_name="Ibrahim Khan",
+    customer_email="ibrahim@outlook.com",
+    payment_method="Card",
+    items=[
+      Item(product_name="Monitor", quantity=1, unit_price=15000),
+      Item(product_name="Keyboard", quantity=1, unit_price=3000),
+    ]
+  ),
+  make_receipt(
+    order_id="ORD-004",
+    customer_name="Zainab Mohammed",
+    customer_email="zainab@gmail.com",
+    payment_method="Transfer",
+    items=[
+      Item(product_name="USB Cable", quantity=5, unit_price=500),
+      Item(product_name="HDMI Cable", quantity=2, unit_price=1000),
+    ]
+  ),
+  make_receipt(
+    order_id="ORD-005",
+    customer_name="Omar Malik",
+    customer_email="omar@outlook.com",
+    payment_method="Card",
+    items=[
+      Item(product_name="Webcam", quantity=1, unit_price=8000),
+      Item(product_name="Microphone", quantity=1, unit_price=6000),
+    ]
+  ),
 ]
 
 
 
 
-
-
 # I Created a DB session for each endpoint
-async def get_db_session():
+def get_db_session():
   try: 
     db = SessionLocal()
     yield db
@@ -95,12 +110,35 @@ async def get_db_session():
 
 
 # Creating Db_seed 
-def init_db(receipt: ReceiptCreate):
+def init_db():
   database_models.Base.metadata.create_all(bind=engine) # This creates all the tables in the db
   db = SessionLocal()
   try:
     if db.query(database_models.OrderReceipt).first():
       return # This means we can't populate db since it already has data.
+    
+
+
+    # for receipt in ORDER_SEED:
+    #   data = receipt.model_dump()
+    #   items_data = data.pop("items", [])
+
+    #    # enums -> string values, changing the enum to string values. Just incase my DB acts up.
+    #   if hasattr(data.get("payment_method"), "value"):
+    #       data["payment_method"] = data["payment_method"].value
+
+    #   # Creating the parent and child relationship of the receipt and items table
+    #   db_order_receipt = OrderReceipt(**data)
+    #   db_order_receipt.items = [Item(**item) for item in items_data]
+    #   db.add(db_order_receipt)
+    # db.commit() # Save to database
+
+    # I don't think i need the above if I'm already computing it properyl using the functions
+
+    db.add_all(ORDER_SEED)
+    db.commit()
+  finally:
+    db.close()
     
 
 
@@ -110,7 +148,7 @@ def init_db(receipt: ReceiptCreate):
 
 @app.get("/receipts")
 def get_reciepts():
-  return ORDER
+  return ORDER_SEED
 
 
 # @app.post("/receipts/payment-success") # response_model=ReceiptItemResponse)
@@ -170,8 +208,46 @@ def html_to_pdf_bytes(html_str: str) -> bytes:
 
 # Webhook Payment Success
 @app.post("/webhook/payment-success/")
-def order_webhook(receipt: ReceiptCreate):
-  html = receipt_to_html(receipt)
+def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session)) -> ReceiptItemResponse:
+  receipt_exists = db.query(OrderReceipt).filter(OrderReceipt.order_id == receipt.order_id).first()
+
+  if receipt_exists:
+    raise HTTPException(status_code=409, detail="Order Receipt Already Exists, can't add new Receipt")
+  
+  # We need to compute total and the likes for the receipt data
+  subtotal = sum(i.quantity* i.unit_price for i in receipt.items)
+  tax = round(subtotal * 0.10, 2) #Round value to 2dp
+  total = round(subtotal + tax, 2)
+
+
+  # Creating the Object Relational Mapper for the Parent and child class
+  db_receipt = OrderReceipt(
+    order_id = receipt.order_id,
+    customer_name=receipt.customer_name,
+    customer_email=str(receipt.customer_email),
+    payment_method=receipt.payment_method.value,
+    subtotal=subtotal,
+    tax=tax,
+    total=total,
+    items = [
+      Item(
+        product_name = i.product_name, 
+        quantity = i.quantity, 
+        unit_price = i.unit_price, 
+      ) 
+      for i in receipt.items
+    ]
+  )
+
+  # Finally we can save it
+  db.add(db_receipt)
+  db.commit()
+  db.refresh(db_receipt)
+
+
+
+  # Now i can Generate the PDF Using PDFKIT and Jinja2
+  html = receipt_to_html(receipt) # Chnaging the validated receipt data to html
   pdf_bytes = html_to_pdf_bytes(html)
   safe_name = receipt.customer_name.replace(" ", "_")
   headers = {
