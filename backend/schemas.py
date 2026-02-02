@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -19,6 +19,7 @@ class ReceiptItemCreate(BaseModel):
 
 # Now we create the Reciept using this Values
 class ReceiptCreate(BaseModel):
+  order_id: str
   customer_name: str
   customer_email: EmailStr
   items: list[ReceiptItemCreate]
@@ -28,24 +29,27 @@ class ReceiptCreate(BaseModel):
 
 
 class ReceiptItemResponse(ReceiptItemCreate):
-  id: int
-  subtotal: float
+  model_Config = ConfigDict(from_attributes = True) # This is  why FastAPI is better, if the item is not available in the table of the db, it checks if the item is an attribute from another table and uses .notation to pluck it's value
 
-  class Config:
-    from_attributes = True # This is  why FastAPI is better, if the item is not available in the table of the db, it checks if the item is an attribute from another table and uses .notation to pluck it's value
+  id: int
 
   
-class ReceiptResponse(ReceiptCreate):
+class ReceiptResponse(BaseModel):
+  model_config = ConfigDict(from_attributes=True) # This allows the response model work with sqlalchemy model.
   id: int
-  receipt_number: str
+  order_id: str
+
+  customer_name: str
+  customer_email: EmailStr
+  payment_method: str
+
   subtotal: float
   tax: float
   total: float
   pdf_url: str
   created_at: datetime
 
-  class Config:
-    from_attributes = True
+  items: List[ReceiptItemResponse]
 
 
 

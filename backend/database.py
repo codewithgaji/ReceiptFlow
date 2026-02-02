@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-db_url = os.getenv("DATABASE_URL")
+db_url = os.getenv("DATABASE_URL") # I'm getting the db_Url from .env
 if not db_url:
   raise RuntimeError("Database URL Not set")
 

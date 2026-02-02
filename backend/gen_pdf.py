@@ -77,6 +77,81 @@ async def order_webhook(receipt: ReceiptCreate):
 
 
 
+# HOW TO CHANGE A PYDANTIC MODEL DATA INSERTED IN AN HTML TO A PDF THAT IS DOWNLOADABLE
+# env = Environment(
+#   loader=FileSystemLoader("templates"),
+#   autoescape=(["html", "xml"]),
+# )
+
+# def receipt_to_html(data: ReceiptCreate):
+#   template = env.get_template("receipt.html")
+#   subtotal = sum(i.quantity * i.unit_price for i in data.items)
+#   tax = subtotal * 0.10
+#   total = subtotal + tax
+  
+#   return template.render(
+#     receipt = data,
+#     total = total,
+#     subtotal = subtotal, 
+#     tax=tax,
+#     items = data.items
+#   )
+
+
+# def html_to_pdf_bytes(html_str: str) -> bytes:
+#   return pdfkit.from_string(html_str, False)
+
+
+# @app.post("/webhook/payment-success/")
+# async def order_webhook(receipt: ReceiptCreate):
+#   html = receipt_to_html(receipt)
+#   pdf_bytes = html_to_pdf_bytes(html)
+#   safe_name = receipt.customer_name.replace(" ", "_")
+
+#   headers = {
+#     "Content-Disposition": f'attachment; filename="receipt-{safe_name}.pdf"'
+#   }
+
+#   return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
+
+
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Row, Integer, String, Float, Date, ForeignKey
+from sqlalchemy.sql import func
+
+
+Base = declarative_base()
+
+
+class Receipt(Base):
+  __tablename__ = "receipts"
+  id = Column(Integer, primary_key = True, index=True, autoincrement=True)
+  order_id = Column(String, index=True) # This works better for rounding than "Float"
+  subtotal = Column(Float, default=0)
+  total = Column(Float, default=0)
+  customer_name = Column(String, nullable=False)
+  customer_email = Column(String, nullable=False)
+  date_of_purchae = Column(Date, server_default=func.current_date())
+
+  items = relationship( # This shows the relationship of the "items" attrs to the "Items" table.
+    "Items", 
+    back_populates="receipt", # This connects it back to the table
+    cascade="all, delete-orphan" # This cascades/deletes all the data from the "receipts" and the "items" table
+  )
+ 
+ 
+
+
+class Items(Base):
+  __tablename__ = "items"
+  id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+  receipt_id = Column(Integer, ForeignKey("receipts.id", ondelete="CASCADE"))
+  product_name = Column(String)
+  quantity = Column(Integer)
+  unit_price = Column(Float)
+
+  receipt = relationship("Receipt", back_populates="items")
+
 
 
 
