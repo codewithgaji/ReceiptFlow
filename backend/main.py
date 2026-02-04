@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
+from fastapi import FastAPI, HTTPException, UploadFile, Depends, BackgroundTasks
 from schemas import ReceiptCreate, PaymentMethod, ReceiptItemResponse
 from pathlib import Path
 # from weasyprint import HTML not working
@@ -10,7 +10,7 @@ from database_models import OrderReceipt, Item # This is used for seeding
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
 from cloudinary_service import upload_pdf_to_cloudinary
-
+from email_service import send_receipt_email
 
 
 app = FastAPI()
@@ -227,7 +227,7 @@ def html_to_pdf_bytes(html_str: str) -> bytes:
 
 # Webhook Payment Success
 @app.post("/webhook/payment-success/")
-def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session)):
+def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: Session = Depends(get_db_session)):
   receipt_exists = db.query(OrderReceipt).filter(OrderReceipt.order_id == receipt.order_id).first()
 
   if receipt_exists:
@@ -248,6 +248,7 @@ def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session))
     subtotal=subtotal,
     tax=tax,
     total=total,
+    business_store=receipt.business_store,
     items = [
       Item(
         product_name = i.product_name, 
@@ -271,7 +272,18 @@ def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session))
 
   # And I upload to cloudinary by passing the parameters from the "cloudinary_sevice.py" created.
   pdf_url = upload_pdf_to_cloudinary(pdf_bytes, public_id=public_id)
+  db_receipt.pdf_url = pdf_url
 
+  # Send Email in Background(So it won't block the process)
+
+  background_tasks.add_task(
+    send_receipt_email,
+    to_email=db_receipt.customer_email,
+    customer_name=db_receipt.customer_name,
+    pdf_url=pdf_url,
+    business_store = db_receipt.business_store,
+    order_id = db_receipt.order_id
+  )
 
 
   # MIGRATING FROM STREAMLINE DOWNLOAD TO UPLOADING ON CLOUDINARY
@@ -283,7 +295,7 @@ def order_webhook(receipt: ReceiptCreate, db: Session = Depends(get_db_session))
   # return Response(
   #   content=pdf_bytes, media_type="application/pdf", headers=headers)
   
-  # Finally we can save it
+  # Finally we can save it - Moved This down here so incase the generation and smtp don't work we can easily be sure that the data was not saved
   db.add(db_receipt)
   db.commit()
   db.refresh(db_receipt)
