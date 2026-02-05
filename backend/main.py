@@ -259,15 +259,17 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
   db.add(db_receipt)
   db.commit()
   db.refresh(db_receipt)
-
+  print("STEP 1: saved to DB", db_receipt.id)
 
   # Now i can Generate the PDF Using PDFKIT and Jinja2
-  html = receipt_to_html(db_receipt) # Chnaging the validated receipt data to html
+  html = receipt_to_html(db_receipt)
+  print("STEP 2: html ready", len(html)) # Chnaging the validated receipt data to html
   pdf_bytes = html_to_pdf_bytes(html)
-  
+  print("STEP 3: pdf bytes ready", len(pdf_bytes))
 
   # Cloudinary Upload
   public_id = f"{db_receipt.order_id}-{db_receipt.receipt_number}" # This creates the public id 
+  print("STEP 4: cloudinary ok", pdf_url)
 
   # And I upload to cloudinary by passing the parameters from the "cloudinary_sevice.py" created.
   pdf_url = upload_pdf_to_cloudinary(pdf_bytes, public_id=public_id)
