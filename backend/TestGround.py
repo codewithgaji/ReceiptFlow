@@ -157,5 +157,15 @@ class Items(Base):
 
 
  
+# Uploading files to a system directory
+UPLOAD_DIR = Path() / 'file_uploads'
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
+
+@app.post("/uploadfile/")
+async def upload_file(file_upload: UploadFile):
+  data = await file_upload.read()
+  save_to = UPLOAD_DIR / file_upload.filename
+  with open(save_to, 'wb') as f:
+    f.write(data)
 

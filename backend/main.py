@@ -182,20 +182,6 @@ def get_reciepts(db: Session = Depends(get_db_session)):
 
 
 
-# Uploading files to a system directory
-UPLOAD_DIR = Path() / 'file_uploads'
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-
-@app.post("/uploadfile/")
-async def upload_file(file_upload: UploadFile):
-  data = await file_upload.read()
-  save_to = UPLOAD_DIR / file_upload.filename
-  with open(save_to, 'wb') as f:
-    f.write(data)
-
-
-
 # Loading the "templates" folder
 env = Environment(
   loader=FileSystemLoader("templates"),
@@ -269,7 +255,10 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
     ]
   )
 
-
+  # Finally we can save it - Moved This down here so incase the generation and smtp don't work we can easily be sure that the data was not saved
+  db.add(db_receipt)
+  db.commit()
+  db.refresh(db_receipt)
 
 
   # Now i can Generate the PDF Using PDFKIT and Jinja2
@@ -284,6 +273,8 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
   pdf_url = upload_pdf_to_cloudinary(pdf_bytes, public_id=public_id)
   
   db_receipt.pdf_url = pdf_url
+  db.commit()
+  db.refresh(db_receipt)
 
   # Send Email in Background(So it won't block the process)
 
@@ -306,10 +297,7 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
   # return Response(
   #   content=pdf_bytes, media_type="application/pdf", headers=headers)
   
-  # Finally we can save it - Moved This down here so incase the generation and smtp don't work we can easily be sure that the data was not saved
-  db.add(db_receipt)
-  db.commit()
-  db.refresh(db_receipt)
+  
   
   return {
     "id": db_receipt.id,
