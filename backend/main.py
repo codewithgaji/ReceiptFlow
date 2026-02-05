@@ -269,11 +269,17 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
 
   # Cloudinary Upload
   public_id = f"{db_receipt.order_id}-{db_receipt.receipt_number}" # This creates the public id 
-  print("STEP 4: cloudinary ok", pdf_url)
+   # Cloudinary Upload
+  public_id = f"{db_receipt.order_id}-{db_receipt.receipt_number}"
 
-  # And I upload to cloudinary by passing the parameters from the "cloudinary_sevice.py" created.
-  pdf_url = upload_pdf_to_cloudinary(pdf_bytes, public_id=public_id)
-  
+  try: # This Try catch block is to catch any errors that might occur during the cloudinary upload process, and also to print out the error for debugging purposes on Railway.
+    print("STEP 4: starting cloudinary upload", public_id, len(pdf_bytes))
+    pdf_url = upload_pdf_to_cloudinary(pdf_bytes, public_id=public_id)
+    print("STEP 5: cloudinary ok", pdf_url)
+  except Exception as e:
+    print("STEP 4 FAILED: cloudinary error:", repr(e))
+    raise HTTPException(status_code=502, detail="Cloudinary upload failed")
+
   db_receipt.pdf_url = pdf_url
   db.commit()
   db.refresh(db_receipt)
