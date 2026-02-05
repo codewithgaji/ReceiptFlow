@@ -11,11 +11,18 @@ from database import engine, SessionLocal
 from sqlalchemy.orm import Session
 from cloudinary_service import upload_pdf_to_cloudinary
 from email_service import send_receipt_email
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 
 # But wait, subtotal, total, and tax are set to nullable in my db_model, let's create a function to compute them
