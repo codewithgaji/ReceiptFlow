@@ -2,69 +2,282 @@
 <html>
   <head>
     <style>
-      body {
-        font-family: Arial;
-        margin: 40px;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      h1 {
+      
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        padding: 0;
+        margin: 0;
+      }
+      
+      .page-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #6b5ce7;
+        z-index: -1;
+      }
+      
+      .watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 100px;
+        color: rgba(255, 255, 255, 0.05);
+        font-weight: bold;
+        font-style: italic;
+        white-space: nowrap;
+        z-index: 0;
+      }
+      
+      .container {
+        max-width: 800px;
+        margin: 30px auto;
+        background: white;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .header {
+        background-color: #6b5ce7;
+        padding: 40px 40px 30px 40px;
+        text-align: center;
+        color: white;
+      }
+      
+      .branding-text {
+        font-size: 14px;
+        color: #e0e0e0;
+        font-weight: normal;
+        letter-spacing: 3px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+      
+      .brand-name-container {
+        margin: 15px 0;
+      }
+      
+      .brand-name {
+        font-size: 48px;
+        font-weight: bold;
+        color: #ffd700;
+        letter-spacing: 4px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        font-style: italic;
+        border-bottom: 3px solid #ffd700;
+        display: inline-block;
+        padding-bottom: 10px;
+      }
+      
+      .receipt-title {
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 20px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      
+      .content {
+        padding: 40px;
+      }
+      
+      .customer-info {
+        background-color: #f0f0ff;
+        padding: 25px;
+        margin-bottom: 30px;
+        border-left: 5px solid #6b5ce7;
+      }
+      
+      .customer-info h2 {
+        font-size: 22px;
+        color: #333;
+        margin-bottom: 15px;
+        font-weight: bold;
+        border-bottom: 2px solid #6b5ce7;
+        padding-bottom: 10px;
+      }
+      
+      .info-row {
+        margin-bottom: 10px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      
+      .info-label {
+        font-weight: bold;
+        color: #555;
+        display: inline-block;
+        min-width: 140px;
+      }
+      
+      .info-value {
         color: #333;
       }
+      
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 20px;
+        margin: 30px 0;
+        border: 2px solid #6b5ce7;
       }
-      th,
-      td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-      }
+      
       th {
-        background-color: #4caf50;
+        background-color: #6b5ce7;
         color: white;
-      }
-      .total {
-        font-size: 18px;
+        padding: 15px 12px;
+        text-align: left;
         font-weight: bold;
-        text-align: right;
-        margin-top: 20px;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1px;
+        border-bottom: 3px solid #4a3eb5;
+      }
+      
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+        color: #555;
+        font-size: 14px;
+      }
+      
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      
+      tr:last-child td {
+        border-bottom: none;
+      }
+      
+      .total-section {
+        background-color: #6b5ce7;
+        padding: 25px 30px;
+        color: white;
+        margin-top: 30px;
+      }
+      
+      .total-row {
+        padding: 8px 0;
+        font-size: 16px;
+        overflow: hidden;
+      }
+      
+      .total-row .label {
+        float: left;
+        font-weight: normal;
+      }
+      
+      .total-row .amount {
+        float: right;
+        font-weight: normal;
+      }
+      
+      .total-row.final {
+        font-size: 22px;
+        font-weight: bold;
+        padding-top: 15px;
+        border-top: 2px solid white;
+        margin-top: 10px;
+      }
+      
+      .footer {
+        text-align: center;
+        padding: 25px;
+        background-color: #f5f5f5;
+        color: #888;
+        font-size: 13px;
+        border-top: 3px solid #6b5ce7;
+      }
+      
+      .decorative-line {
+        height: 5px;
+        background-color: #ffd700;
+        margin: 0;
       }
     </style>
   </head>
   <body>
-    {#
-    <h1>Receipt {{ receipt_number }}</h1>
-    #}
-    <h1><strong>Customer:</strong> {{ receipt.customer_name }}</h1>
-    <p><strong>Email:</strong> {{ receipt.customer_email }}</p>
-     <p><strong>Business:</strong> {{ receipt.business_store }}</p>
-    <p><strong>Payment Method:</strong> {{ payment_method }}</p>
-    {#
-    <p><strong>Date:</strong> {{ date }}</p>
-    #}
+    <div class="page-background">
+      <div class="watermark">ReceiptFlow</div>
+    </div>
+    
+    <div class="container">
+      <div class="header">
+        <div class="branding-text">RECEIPTFLOW BY</div>
+        <div class="brand-name-container">
+          <div class="brand-name">Gaji</div>
+        </div>
+        <div class="receipt-title">Receipt</div>
+      </div>
+      
+      <div class="decorative-line"></div>
+      
+      <div class="content">
+        <div class="customer-info">
+          <h2>{{ receipt.customer_name }}</h2>
+          <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ receipt.customer_email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Business:</span>
+            <span class="info-value">{{ receipt.business_store }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Payment Method:</span>
+            <span class="info-value">{{ payment_method }}</span>
+          </div>
+        </div>
 
-    <table>
-      <tr>
-        <th>Item</th>
-        <th>Quantity</th>
-        <th>Price</th>
-        <th>Subtotal</th>
-      </tr>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.product_name }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>${{ "%.2f"|format(item.unit_price) }}</td>
-        <td>${{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
-      </tr>
-      {% endfor %}
-    </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.product_name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{ "%.2f"|format(item.unit_price) }}</td>
+              <td>${{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
 
-    <div class="total">
-      <p>Subtotal: ${{ "%.2f"|format(subtotal) }}</p>
-      <p>Tax (10%): ${{ "%.2f"|format(tax) }}</p>
-      <p>Total: ${{ "%.2f"|format(total) }}</p>
+        <div class="total-section">
+          <div class="total-row">
+            <span class="label">Subtotal:</span>
+            <span class="amount">${{ "%.2f"|format(subtotal) }}</span>
+          </div>
+          <div class="total-row">
+            <span class="label">Tax (10%):</span>
+            <span class="amount">${{ "%.2f"|format(tax) }}</span>
+          </div>
+          <div class="total-row final">
+            <span class="label">Total:</span>
+            <span class="amount">${{ "%.2f"|format(total) }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer">
+        Thank you for your business!
+      </div>
     </div>
   </body>
 </html>

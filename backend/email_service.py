@@ -15,7 +15,7 @@ def send_receipt_email(to_email:str, customer_name: str, pdf_url: str,  order_id
   from_email = os.getenv("FROM_EMAIL") # This is still my email, but a representation for "ReceiptFlow"
 
   if not all([smtp_host, smtp_port, smtp_password, smtp_email, from_email]):
-      raise RuntimeError("Missing SMTP env vars (SMTP_HOST/SMTP_/SMTP_PASS/SMTP_EMAIL)")
+      raise RuntimeError("Missing SMTP env vars (SMTP_HOST/SMTP_PORT/SMTP_PASS/SMTP_EMAIL)")
   
   smtp_password = smtp_password.replace(" ", "") # To remove it's trailing
   
@@ -43,7 +43,7 @@ def send_receipt_email(to_email:str, customer_name: str, pdf_url: str,  order_id
        server.send_message(msg)
        print(f"✅ Email sent successfully to {to_email}")
   except Exception as e:
-       print(f"❌ Email failed: {e}")
+       print(f"Email failed: {e}")
        raise
 
   
