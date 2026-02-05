@@ -1,19 +1,19 @@
-FROM python:3.13-slim
+FROM python:3.12-slim-bookworm
 
-# Install system dependency for pdfkit
+# wkhtmltopdf + common runtime deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wkhtmltopdf \
+    fontconfig \
+    libxrender1 \
+    libxext6 \
+    libjpeg62-turbo \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
 COPY . .
 
-# Start FastAPI (Railway will override port)
 CMD ["sh", "-c", "python -m uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2"]
