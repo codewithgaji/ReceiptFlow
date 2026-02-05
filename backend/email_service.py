@@ -34,7 +34,7 @@ def send_receipt_email(to_email:str, customer_name: str, pdf_url: str,  order_id
   )
 
   try: # Using a try catch block to catch any errors that might occur during the SMTP process, and also to print out the error for debugging purposes.
-    with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+    with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
        server.set_debuglevel(1)  # Enable debug output
        server.ehlo() # This Introduces our Program to Gmail's Server "Hello Server"
        server.starttls() # This Turns the connection into an encrypted (secure) connection
