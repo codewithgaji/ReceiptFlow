@@ -41,6 +41,7 @@ def send_receipt_email(to_email:str, customer_name: str, pdf_url: str,  order_id
        server.ehlo()
        server.login(smtp_email, smtp_password)
        server.send_message(msg)
+       print("SMTP CONFIG:", smtp_host, smtp_port)
        print(f"✅ Email sent successfully to {to_email}")
   except Exception as e:
        print(f"Email failed: {e}")
