@@ -18,7 +18,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://receipt-flow-eta.vercel.app", "http://localhost:8080"],  # Allow all origins
+    allow_origins=[
+    "https://receipt-flow-eta.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:8080",],  # Allow all origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
