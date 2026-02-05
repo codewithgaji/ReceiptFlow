@@ -272,6 +272,7 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
 
   # And I upload to cloudinary by passing the parameters from the "cloudinary_sevice.py" created.
   pdf_url = upload_pdf_to_cloudinary(pdf_bytes, public_id=public_id)
+  
   db_receipt.pdf_url = pdf_url
 
   # Send Email in Background(So it won't block the process)
@@ -301,7 +302,7 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
   db.refresh(db_receipt)
   
   return {
-    "id": db_receipt.order_id,
+    "id": db_receipt.id,
     "order_id": db_receipt.order_id,
     "receipt_number": db_receipt.receipt_number,
     "Pdf_Url": pdf_url
