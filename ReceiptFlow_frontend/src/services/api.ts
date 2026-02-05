@@ -1,7 +1,7 @@
 import { Receipt, ReceiptCreate, ReceiptCreateResponse } from "@/types/receipt";
 
 // API Base URL - Change this to your production URL when deploying
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = "https://receiptflow-production.up.railway.app";
 
 class ApiService {
   private baseUrl: string;
@@ -55,7 +55,7 @@ class ApiService {
     } catch (error) {
       if (error instanceof TypeError && error.message === "Failed to fetch") {
         throw new Error(
-          "⚠️ Backend not connected. Make sure FastAPI is running on http://localhost:8000"
+          "⚠️ Backend not connected. Make sure FastAPI is running on Railway"
         );
       }
       throw error;
@@ -75,7 +75,7 @@ class ApiService {
     } catch (error) {
       if (error instanceof TypeError && error.message === "Failed to fetch") {
         throw new Error(
-          "⚠️ Backend not connected. Make sure FastAPI is running on http://localhost:8000"
+          "⚠️ Backend not connected. Make sure FastAPI is running on Railway"
         );
       }
       throw error;
@@ -95,7 +95,7 @@ class ApiService {
     } catch (error) {
       if (error instanceof TypeError && error.message === "Failed to fetch") {
         throw new Error(
-          "⚠️ Backend not connected. Make sure FastAPI is running on http://localhost:8000"
+          "⚠️ Backend not connected. Make sure FastAPI is running on Railway"
         );
       }
       throw error;
