@@ -3,7 +3,7 @@ import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
 from typing import Dict, Any
-import resend
+# import resend - I'm not using the SDK, but I will be using the SMTP Relay, so I don't need to import the resend package
 
 
 

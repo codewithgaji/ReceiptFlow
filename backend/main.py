@@ -295,14 +295,17 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
     order_id = db_receipt.order_id
   )
 
-  background_tasks.add_task(
-    send_receipt_email_resend,
-    to_email=db_receipt.customer_email,
-    customer_name=db_receipt.customer_name,
-    pdf_url=pdf_url,
-    business_store = db_receipt.business_store,
-    order_id = db_receipt.order_id
-  )
+  try:
+    background_tasks.add_task(
+      send_receipt_email_resend,
+      to_email=db_receipt.customer_email,
+      customer_name=db_receipt.customer_name,
+      pdf_url=pdf_url,
+      business_store = db_receipt.business_store,
+      order_id = db_receipt.order_id
+    )
+  except Exception as e:
+    print("Failed to add Resend email task:", repr(e))
 
 
   # MIGRATING FROM STREAMLINE DOWNLOAD TO UPLOADING ON CLOUDINARY
