@@ -10,7 +10,7 @@ from database_models import OrderReceipt, Item # This is used for seeding
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
 from cloudinary_service import upload_pdf_to_cloudinary
-from email_service import send_receipt_email
+from email_service import send_receipt_email, send_receipt_email_resend
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -288,6 +288,15 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
 
   background_tasks.add_task(
     send_receipt_email,
+    to_email=db_receipt.customer_email,
+    customer_name=db_receipt.customer_name,
+    pdf_url=pdf_url,
+    business_store = db_receipt.business_store,
+    order_id = db_receipt.order_id
+  )
+
+  background_tasks.add_task(
+    send_receipt_email_resend,
     to_email=db_receipt.customer_email,
     customer_name=db_receipt.customer_name,
     pdf_url=pdf_url,
