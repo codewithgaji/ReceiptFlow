@@ -2,12 +2,21 @@ import os
 import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
+from typing import Dict, Any
+import resend
+
+
 
 load_dotenv()
 
 
 # This function will be called in the webhook using "Background Tasks"
-def send_receipt_email(to_email:str, customer_name: str, pdf_url: str,  order_id: str, business_store: str): # The Function and it's attributes
+def send_receipt_email(
+      to_email:str, 
+      customer_name: str, 
+      pdf_url: str,  
+      order_id: str, 
+      business_store: str): # The Function and it's attributes
   smtp_host = os.getenv("SMTP_HOST")
   smtp_email = os.getenv("SMTP_EMAIL")
   smtp_password = os.getenv("SMTP_APP_PASSWORD")
@@ -51,3 +60,47 @@ def send_receipt_email(to_email:str, customer_name: str, pdf_url: str,  order_id
 
 
 
+# RESEND SETUP
+
+
+# Get Resend API Key from environment variable
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+
+
+def send_receipt_email_resend(
+      to_email:str, 
+      customer_name: str, 
+      pdf_url: str,  
+      order_id: str, 
+      business_store: str
+):
+   resend_smtp_host = os.getenv("RESEND_SMTP_HOST")
+   resend_smtp_port = os.getenv("RESEND_SMTP_PORT")
+   from_email = os.getenv("FROM_EMAIL") # This is still my email, but a representation for "ReceiptFlow"
+   if not all([resend_smtp_host, resend_smtp_port, RESEND_API_KEY, from_email]):
+      raise RuntimeError("Missing Resend SMTP env vars (RESEND_SMTP_HOST/RESEND_SMTP_PORT/RESEND_API_KEY)")
+   try:
+      msg = EmailMessage()
+      msg["Subject"] = f"Your receipt for order {order_id}"
+      msg["From"] = from_email
+      msg["To"] = to_email
+
+      msg.set_content(
+         f"Hi {customer_name}, \n\n"
+         f"Thanks for your purchase with {business_store} \n\n"
+         f"Download Your Receipt here: \n{pdf_url} \n\n"
+         f"Regards, \nReceiptFlow"
+      )
+
+      with smtplib.SMTP(resend_smtp_host, resend_smtp_port, timeout=20) as server:
+         server.set_debuglevel(1)
+         server.ehlo()
+         server.starttls()
+         server.ehlo()
+         server.login("api", RESEND_API_KEY)
+         server.send_message(msg)
+         print("Resend SMTP CONFIG:", resend_smtp_host, resend_smtp_port)
+         print(f"✅ Resend Email sent successfully to {to_email}")  
+   except Exception as e:
+      print(f"Resend Email failed: {e}")
+      raise
