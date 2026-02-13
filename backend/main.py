@@ -296,7 +296,7 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
   )
 
   try:
-    background_tasks.add_task(
+    background_tasks.add_task( # Resend email task, in case the first one fails, this will be retried by Resend's retry mechanism, and also it will be useful for the resend email feature in the frontend.
       send_receipt_email_resend,
       to_email=db_receipt.customer_email,
       customer_name=db_receipt.customer_name,
