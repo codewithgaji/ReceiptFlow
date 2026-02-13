@@ -1,7 +1,7 @@
 import { Receipt, ReceiptCreate, ReceiptCreateResponse } from "@/types/receipt";
 
 // API Base URL - Change this to your production URL when deploying
-export const API_BASE_URL = "https://receiptflow-production.up.railway.app";
+export const API_BASE_URL = "https://receiptflow-production.up.railway.app" //"http://127.0.0.1:8000";
 
 class ApiService {
   private baseUrl: string;

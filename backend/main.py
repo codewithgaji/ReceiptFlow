@@ -283,9 +283,11 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
   db_receipt.pdf_url = pdf_url
   db.commit()
   db.refresh(db_receipt)
+  print(" ✅ STEP 6: Receipt URL Saved Successfully on DB", pdf_url)
 
   # Send Email in Background(So it won't block the process)
 
+  print("STEP 7: Starting Email SMTP", db_receipt.customer_email, pdf_url) # This is to check if the email and pdf url are correct before sending the email, and also to check if the process is reaching this point.
   background_tasks.add_task(
     send_receipt_email,
     to_email=db_receipt.customer_email,
@@ -295,6 +297,8 @@ def order_webhook(receipt: ReceiptCreate, background_tasks: BackgroundTasks,db: 
     order_id = db_receipt.order_id
   )
 
+  # RESEND
+  print("STEP 8: Starting Resend Email SMTP", db_receipt.customer_email, pdf_url)
   try:
     background_tasks.add_task( # Resend email task, in case the first one fails, this will be retried by Resend's retry mechanism, and also it will be useful for the resend email feature in the frontend.
       send_receipt_email_resend,
