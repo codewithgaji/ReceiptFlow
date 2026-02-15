@@ -185,7 +185,7 @@ def get_reciepts(db: Session = Depends(get_db_session)):
 def get_receipt_by_id(receipt_id: int, db: Session):
   receipt = db.query(OrderReceipt).filter(OrderReceipt.id == receipt_id).first()
   if not receipt:
-    raise HTTPException(status_code=404, detail="Receipt not found")
+    raise HTTPException(status_code=404, detail=f"Receipt with ID {receipt_id} not found")
   return receipt
 
 
