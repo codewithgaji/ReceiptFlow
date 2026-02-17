@@ -47,7 +47,7 @@ class Item(Base):
   product_name = Column(String, nullable=False)
 
   quantity = Column(Integer, default=0)
-  unit_price = Column(Float, default=0)
+  unit_price = Column(Float, default=0.0)
 
 
   # This is being populated using the relationship of items in the OrderReceipt Table

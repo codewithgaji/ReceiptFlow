@@ -56,7 +56,7 @@ def send_receipt_email(
        print(f" ❌ Email failed: {e}")
        raise
 
-  
+
 
 
 

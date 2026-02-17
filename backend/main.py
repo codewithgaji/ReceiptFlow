@@ -181,6 +181,14 @@ def get_reciepts(db: Session = Depends(get_db_session)):
 #   return HTTPException(status_code=200, detail=f"{receipt.customer_name} receipt Created!")
 
 
+@app.get("/receipts/{receipt_id}")
+def get_receipt_by_id(receipt_id: int, db: Session):
+  receipt = db.query(OrderReceipt).filter(OrderReceipt.id == receipt_id).first()
+  if not receipt:
+    raise HTTPException(status_code=404, detail="Receipt not found")
+  return receipt
+
+
 
 # Loading the "templates" folder
 env = Environment(
