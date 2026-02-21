@@ -202,13 +202,13 @@ pip install -r requirements.txt
 3. **Configure environment variables**
 ```env
 DATABASE_URL=postgresql://user:password@localhost/receiptflow
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_CLOUD_NAME=my_cloud_name
+CLOUDINARY_API_KEY=my_api_key
+CLOUDINARY_API_SECRET=my_api_secret
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USERNAME=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
+SMTP_USERNAME=my_email@gmail.com
+SMTP_PASSWORD=my_app_password
 ```
 
 4. **Run migrations**
