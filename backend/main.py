@@ -192,9 +192,10 @@ def get_receipt_by_id(receipt_id: int, db: Session):
 
 # Loading the "templates" folder
 env = Environment(
-  loader=FileSystemLoader("templates"),
+  loader=FileSystemLoader("templates"), 
   autoescape=select_autoescape(["html", "xml"]),
 )
+
 
 
 # This is where the heavy work of turning receipt to Html occurs
