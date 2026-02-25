@@ -132,7 +132,7 @@ def init_db():
   db = SessionLocal()
   try:
     if db.query(database_models.OrderReceipt).first():
-      return # This means we can't populate db since it already has data.
+      return {"Message": "DB already exists, not seeding."}# This means we can't populate db since it already has data.
     
 
 
